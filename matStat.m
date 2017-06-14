@@ -3,6 +3,7 @@ function [ varargout ] = matStat( A, name )
 %  [George-Gate @2017-06-14]
 %  [Usage]
 %       matDensity=matStat( A )
+%       matDensity=matStat( A, name )
 %   
     if nargin==1
         name=inputname(1);
