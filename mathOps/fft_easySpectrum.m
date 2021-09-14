@@ -1,5 +1,6 @@
-function [freq, X] = fft_easySpectrum(x, samplingRate, fft_window)
-% Version 1.1 @ 2020-06-02
+function [freq, spectrum, enbw] = fft_easySpectrum(x, samplingRate, fft_window)
+% [freq, spectrum, enbw] = fft_easySpectrum(x, samplingRate, fft_window)
+% Version 2.2 @ 2021-09-15
 % By GeorgeGate
     
     %this is a custom function that helps in plotting the two-sided spectrum
@@ -11,22 +12,6 @@ function [freq, X] = fft_easySpectrum(x, samplingRate, fft_window)
     end
     
     N=length(x);
-
-    switch upper(fft_window)
-        case 'RECT'
-            windowVec = ones(N,1); 
-        case 'HANN'
-            % 时域: w(t)=0.5 - 0.5*cos(2*pi*t/T), 其中T是采样时长
-            windowVec = hann(N,'periodic')*2;
-        case 'HAMMING'
-            % 时域: w(t)=0.54 - 0.46*cos(2*pi*t/T), 其中T是采样时长
-            windowVec = hamming(N,'periodic')*50/27;
-        otherwise
-            error('Unrecognized FFT window.');
-    end
-    windowVec = reshape(windowVec,size(x));
-    
-    
     %this part of the code generates that frequency axis
     if mod(N,2)==0
         k=-N/2:N/2-1; % N even
@@ -36,9 +21,29 @@ function [freq, X] = fft_easySpectrum(x, samplingRate, fft_window)
     T=N/samplingRate;
     freq=k/T; %the frequency axis
 
-    %takes the fft of the signal, and adjusts the amplitude accordingly
-    X=2/N*fft(x.*windowVec); % normalize the data so that the height of peak equals Vpk, 
-                  % ie. for A*sin(wt), you will get a peak whose height is A.
-    X=fftshift(X); %shifts the fft data so that it is centered
+    switch upper(fft_window)
+        case 'RECT'
+            windowVec = ones(N,1); 
+            enbw = 1/T;
+        case 'HANN'
+            % 时域: w(t)=0.5 - 0.5*cos(2*pi*t/T), 其中T是采样时长
+            windowVec = hann(N,'periodic')*2;
+            enbw = 1.5/T;
+        case 'HAMMING'
+            % 时域: w(t)=0.54 - 0.46*cos(2*pi*t/T), 其中T是采样时长
+            windowVec = hamming(N,'periodic')*50/27;
+            enbw = 1987/1458/T;
+        otherwise
+            error('Unrecognized FFT window "%s".', fft_window);
+    end
+    windowVec = reshape(windowVec,size(x));
+    
 
+    %takes the fft of the signal, and adjusts the amplitude accordingly
+    spectrum=1/N*fft(x.*windowVec); % normalize the data so that the height of peak equals Vpk, 
+                  % ie. for A*sin(wt), you will get a peak whose height is A.
+    spectrum=fftshift(spectrum); %shifts the fft data so that it is centered
+    
+    spectrum = reshape(spectrum, size(x));
+    freq = reshape(freq, size(x));
 end
