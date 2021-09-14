@@ -1,6 +1,6 @@
 function [freq, spectrum, enbw] = fft_easySpectrum(x, samplingRate, fft_window)
 % [freq, spectrum, enbw] = fft_easySpectrum(x, samplingRate, fft_window)
-% Version 2.2 @ 2021-09-15
+% Version 2.3 @ 2021-09-15
 % By GeorgeGate
     
     %this is a custom function that helps in plotting the two-sided spectrum
@@ -40,8 +40,8 @@ function [freq, spectrum, enbw] = fft_easySpectrum(x, samplingRate, fft_window)
     
 
     %takes the fft of the signal, and adjusts the amplitude accordingly
-    spectrum=1/N*fft(x.*windowVec); % normalize the data so that the height of peak equals Vpk, 
-                  % ie. for A*sin(wt), you will get a peak whose height is A.
+    spectrum=1/N*fft(x.*windowVec); % normalize the data so that the height of peak equals Vpk/2, 
+                  % ie. for A*sin(wt), you will get a peak whose height is A/2.
     spectrum=fftshift(spectrum); %shifts the fft data so that it is centered
     
     spectrum = reshape(spectrum, size(x));
