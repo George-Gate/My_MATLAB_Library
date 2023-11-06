@@ -1,7 +1,7 @@
-function [freq_full, spectrum_full, spectrumDensity_full, fft_len] = overlappingFFT_logscale(data, saRate, fft_len, varargin)
+function [spectrumData] = overlappingFFT_logscale(data, saRate, fft_len, varargin)
 %OVERLAPPINGFFT_LOGSCALE overlapping FFT with logscale frequency list
-% Author: GeorgeGate @ 2022-12-07
-% Version: 1.0
+% Author: GeorgeGate @ 2022-12-08
+% Version: 2.0
 % 计算PSD的平均值，使用overlapping FFT方式进行平均。频域上的取点满足近似的 logspace，可以有效地平滑高频段的频谱。
 % 
 % average method: mean(PSD)
@@ -41,11 +41,13 @@ function [freq_full, spectrum_full, spectrumDensity_full, fft_len] = overlapping
     % 然后对 data 做平均操作，使采样率减半，再重复上一条操作。
     % 循环直到 data 的长度小于 fft_len
     iterCount = 0;
+    iterationInfo = struct();
     while length(data) >= fft_len
         iterCount = iterCount+1;
         fprintf('Iter %d: ', iterCount);
         dataN = length(data);
         deltaN = max(minGapLen, ceil(minGapTime*saRate));   % overlapping的数据间隔
+        averageNo = 1+floor((dataN-fft_len)/deltaN);
         % 计算 overlapping FFT
         counter = 0;
         startN = 1;
@@ -57,7 +59,7 @@ function [freq_full, spectrum_full, spectrumDensity_full, fft_len] = overlapping
             counter = counter+1;
             startN = startN + deltaN;
             % print progress
-            newStr = sprintf('%d/%d', counter, 1+floor((dataN-fft_len)/deltaN));
+            newStr = sprintf('%d/%d', counter, averageNo);
             fprintf([repmat('\b',1,strCnt) newStr]);
             strCnt = length(newStr);
         end
@@ -72,10 +74,29 @@ function [freq_full, spectrum_full, spectrumDensity_full, fft_len] = overlapping
         spectrum_full        = [ls_summer,            spectrum_full(id1:end)];
         spectrumDensity_full = [ls_summer/sqrt(enbw), spectrumDensity_full(id1:end)];
         
+        iterationInfo(iterCount).iterID = iterCount;
+        iterationInfo(iterCount).saRate = saRate;
+        iterationInfo(iterCount).data_len = dataN;
+        iterationInfo(iterCount).gap_len = deltaN;
+        iterationInfo(iterCount).averageNo = averageNo;
+        iterationInfo(iterCount).freq_range = [freq(2), freq(end)];    % 此次迭代生成的频谱 所覆盖的频率范围
+        try  % 更新上一次迭代的频率范围
+            iterationInfo(iterCount-1).freq_range(1) = freq_full(length(freq)+1);
+        end
+        
         % 降低采样率
         data = reshape(data(1:floor(dataN/2)*2), 2, []);
         data = mean(data, 1);
         saRate = saRate / 2;
     end
+    
+    % pack results
+    spectrumData.freq = freq_full;
+    spectrumData.spectrum = spectrum_full;
+    spectrumData.spectrumDensity = spectrumDensity_full;
+    spectrumData.fft_len = fft_len;
+    spectrumData.inputs = p.Results;
+    spectrumData.inputs = rmfield(spectrumData.inputs, 'data');
+    
 end
 

@@ -7,6 +7,7 @@ function [I, gp_x, gw] = qgauss( func, x1, x2, ngp, gp_x, gw )
 % is evaluated exactly N times at interior points in the range of
 % integration.  
 %********************************************************************************
+%  MATLAB buit-in Gauss¨CLegendre quadrature: quadgk()
     if nargin < 6
         [gp_x, gw] = getGaussPts( ngp );
     end
