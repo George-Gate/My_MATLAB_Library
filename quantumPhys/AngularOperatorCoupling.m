@@ -66,9 +66,10 @@ function ops = AngularOperatorCoupling(num_I, num_S, checkCommutator)
     I2 = Ix^2+Iy^2+Iz^2;
     S2 = Sx^2+Sy^2+Sz^2;
     F2 = Fx^2+Fy^2+Fz^2;
+    IdotS = Ix*Sx+Iy*Sy+Iz*Sz;
     
     % pack ops
-    op_list = {'Fx', 'Fy', 'Fz', 'Fm', 'Fp', 'F2', 'Sx', 'Sy', 'Sz', 'Sm', 'Sp', 'S2', 'Ix', 'Iy', 'Iz', 'Ip', 'Im', 'I2'};
+    op_list = {'Fx', 'Fy', 'Fz', 'Fm', 'Fp', 'F2', 'Sx', 'Sy', 'Sz', 'Sm', 'Sp', 'S2', 'Ix', 'Iy', 'Iz', 'Ip', 'Im', 'I2', 'IdotS'};
 
     rep_kron = struct();
     for ii = 1:length(op_list)
